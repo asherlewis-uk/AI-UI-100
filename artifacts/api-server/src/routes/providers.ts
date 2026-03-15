@@ -44,8 +44,9 @@ router.post("/providers/check", async (req, res) => {
       customEndpoint
     );
     res.json(result);
-  } catch (err: any) {
-    res.json({ ok: false, error: err?.message || "Connection check failed" });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Connection check failed";
+    res.json({ ok: false, error: msg });
   }
 });
 

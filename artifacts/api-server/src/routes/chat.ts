@@ -2,6 +2,12 @@ import { Router, type IRouter } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { createProviderClient, getProviderConfig, type ProviderID } from "../providers";
 
+function extractErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  return "Internal server error";
+}
+
 const VALID_PROVIDERS = new Set<string>(["openai", "anthropic", "gemini", "ollama", "custom"]);
 
 const router: IRouter = Router();
@@ -39,6 +45,10 @@ router.post("/chat", async (req, res) => {
       if (!model) {
         resolvedModel = config.defaultModel;
       }
+      if (!resolvedModel) {
+        res.status(400).json({ error: "A model is required for this provider. Please select or enter a model name in settings." });
+        return;
+      }
     }
 
     res.setHeader("Content-Type", "text/event-stream");
@@ -71,13 +81,14 @@ router.post("/chat", async (req, res) => {
 
     res.write("data: [DONE]\n\n");
     res.end();
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Chat error:", err);
-    const errorMsg = err?.message || "Internal server error";
+    const errorMsg = extractErrorMessage(err);
     const isConfigError =
       errorMsg.includes("Custom endpoints must") ||
       errorMsg.includes("Unknown provider") ||
-      errorMsg.includes("No base URL");
+      errorMsg.includes("No base URL") ||
+      errorMsg.includes("model is required");
 
     if (!res.headersSent) {
       res.status(isConfigError ? 400 : 500).json({ error: errorMsg });

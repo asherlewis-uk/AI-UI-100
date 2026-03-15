@@ -1,5 +1,11 @@
 import OpenAI from "openai";
 
+function extractErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  return "Unknown error";
+}
+
 export type ProviderID =
   | "openai"
   | "anthropic"
@@ -115,19 +121,24 @@ function resolveApiKey(config: ProviderConfig): string | undefined {
   return undefined;
 }
 
-export function isProviderAvailable(config: ProviderConfig): boolean {
+export type ProviderStatus = "ready" | "needs_config" | "needs_endpoint";
+
+export function getProviderStatus(config: ProviderConfig): ProviderStatus {
   const id = config.id as string;
-  if (id === "ollama" || id === "custom") return true;
+
+  if (id === "ollama" || id === "custom") {
+    return "needs_endpoint";
+  }
 
   const baseUrl = resolveBaseUrl(config);
-  if (!baseUrl) return false;
+  if (!baseUrl) return "needs_config";
 
   if (config.apiKeyEnv) {
     const key = resolveApiKey(config);
-    if (!key) return false;
+    if (!key) return "needs_config";
   }
 
-  return true;
+  return "ready";
 }
 
 export function createProviderClient(
@@ -157,7 +168,7 @@ export type ProviderInfo = {
   name: string;
   models: string[];
   defaultModel: string;
-  available: boolean;
+  status: ProviderStatus;
   supportsModelDiscovery: boolean;
   requiresEndpoint: boolean;
 };
@@ -168,7 +179,7 @@ export function getProviderInfoList(): ProviderInfo[] {
     name: config.name,
     models: config.models,
     defaultModel: config.defaultModel,
-    available: isProviderAvailable(config),
+    status: getProviderStatus(config),
     supportsModelDiscovery: config.supportsModelDiscovery ?? false,
     requiresEndpoint: config.id === "ollama" || config.id === "custom",
   }));
@@ -211,11 +222,11 @@ export async function checkProviderConnectivity(
       if (models.length >= 1) break;
     }
     return { ok: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (providerId === "ollama") {
       const ollamaModels = await discoverOllamaModels(customEndpoint);
       if (ollamaModels.length > 0) return { ok: true };
     }
-    return { ok: false, error: err?.message || "Connection failed" };
+    return { ok: false, error: extractErrorMessage(err) };
   }
 }

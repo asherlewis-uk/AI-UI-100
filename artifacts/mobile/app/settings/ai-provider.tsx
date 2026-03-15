@@ -23,22 +23,24 @@ import { Surface } from "@/src/components/Surface";
 import { useTheme } from "@/src/theme/useTheme";
 import { getApiUrl } from "@/lib/api";
 
+type ProviderStatus = "ready" | "needs_config" | "needs_endpoint";
+
 type ProviderInfo = {
   id: ProviderID;
   name: string;
   models: string[];
   defaultModel: string;
-  available: boolean;
+  status: ProviderStatus;
   supportsModelDiscovery: boolean;
   requiresEndpoint: boolean;
 };
 
 const FALLBACK_PROVIDERS: ProviderInfo[] = [
-  { id: "openai", name: "OpenAI", models: ["gpt-5.2", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o", "gpt-4o-mini", "o3-mini"], defaultModel: "gpt-5.2", available: true, supportsModelDiscovery: false, requiresEndpoint: false },
-  { id: "anthropic", name: "Anthropic", models: ["claude-sonnet-4-20250514", "claude-opus-4-20250514", "claude-haiku-3-5-20241022"], defaultModel: "claude-sonnet-4-20250514", available: false, supportsModelDiscovery: false, requiresEndpoint: false },
-  { id: "gemini", name: "Google Gemini", models: ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"], defaultModel: "gemini-2.5-flash", available: false, supportsModelDiscovery: false, requiresEndpoint: false },
-  { id: "ollama", name: "Ollama", models: ["llama3.1", "llama3", "mistral", "codellama", "phi3", "gemma2"], defaultModel: "llama3.1", available: true, supportsModelDiscovery: true, requiresEndpoint: true },
-  { id: "custom", name: "Custom (OpenAI-compatible)", models: [], defaultModel: "", available: true, supportsModelDiscovery: false, requiresEndpoint: true },
+  { id: "openai", name: "OpenAI", models: ["gpt-5.2", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o", "gpt-4o-mini", "o3-mini"], defaultModel: "gpt-5.2", status: "ready", supportsModelDiscovery: false, requiresEndpoint: false },
+  { id: "anthropic", name: "Anthropic", models: ["claude-sonnet-4-20250514", "claude-opus-4-20250514", "claude-haiku-3-5-20241022"], defaultModel: "claude-sonnet-4-20250514", status: "needs_config", supportsModelDiscovery: false, requiresEndpoint: false },
+  { id: "gemini", name: "Google Gemini", models: ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"], defaultModel: "gemini-2.5-flash", status: "needs_config", supportsModelDiscovery: false, requiresEndpoint: false },
+  { id: "ollama", name: "Ollama", models: ["llama3.1", "llama3", "mistral", "codellama", "phi3", "gemma2"], defaultModel: "llama3.1", status: "needs_endpoint", supportsModelDiscovery: true, requiresEndpoint: true },
+  { id: "custom", name: "Custom (OpenAI-compatible)", models: [], defaultModel: "", status: "needs_endpoint", supportsModelDiscovery: false, requiresEndpoint: true },
 ];
 
 export default function AIProviderScreen() {
@@ -175,7 +177,18 @@ export default function AIProviderScreen() {
         <Surface variant="grouped" style={{ marginHorizontal: screenInsets.groupedHorizontal }}>
           {providers.map((p, idx) => {
             const isSelected = settings.ai.provider === p.id;
-            const statusColor = p.available ? "#34C759" : "#FF3B30";
+            const statusColor =
+              p.status === "ready"
+                ? "#34C759"
+                : p.status === "needs_endpoint"
+                  ? "#FF9500"
+                  : "#FF3B30";
+            const statusLabel =
+              p.status === "ready"
+                ? "Ready"
+                : p.status === "needs_endpoint"
+                  ? "Needs endpoint"
+                  : "Not configured";
             return (
               <View key={p.id}>
                 <Pressable
@@ -190,15 +203,16 @@ export default function AIProviderScreen() {
                     isSelected ? { backgroundColor: colors.tintGhost } : undefined,
                   ]}
                   accessibilityRole="button"
-                  accessibilityLabel={`${p.name}${isSelected ? ", selected" : ""}${p.available ? ", available" : ", not configured"}`}
+                  accessibilityLabel={`${p.name}${isSelected ? ", selected" : ""}, ${statusLabel}`}
                 >
                   <View
                     style={[
                       styles.providerIconBox,
                       {
-                        backgroundColor: p.available
-                          ? colors.tintGhost
-                          : "rgba(255,59,48,0.12)",
+                        backgroundColor:
+                          p.status === "needs_config"
+                            ? "rgba(255,59,48,0.12)"
+                            : colors.tintGhost,
                         borderRadius: 7,
                       },
                     ]}
@@ -206,16 +220,16 @@ export default function AIProviderScreen() {
                     <Feather
                       name={getProviderIcon(p.id)}
                       size={16}
-                      color={p.available ? colors.tint : colors.tertiaryLabel}
+                      color={p.status === "needs_config" ? colors.tertiaryLabel : colors.tint}
                     />
                   </View>
                   <View style={styles.providerTextCol}>
                     <Text style={[t.body, { color: colors.label }]} numberOfLines={1}>
                       {p.name}
                     </Text>
-                    {!p.available && (
+                    {p.status !== "ready" && (
                       <Text style={[t.caption1, { color: colors.secondaryLabel }]} numberOfLines={1}>
-                        Not configured
+                        {statusLabel}
                       </Text>
                     )}
                   </View>

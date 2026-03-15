@@ -34,6 +34,7 @@ export function ScreenHeader({ title, center, onBack, trailing, backgroundColor 
       <Pressable
         onPress={onBack}
         style={({ pressed }) => [
+          styles.slot,
           styles.backBtn,
           { opacity: pressed ? op.pressed : 1 },
         ]}
@@ -42,8 +43,10 @@ export function ScreenHeader({ title, center, onBack, trailing, backgroundColor 
       >
         <Feather name="arrow-left" size={22} color={colors.label} />
       </Pressable>
-      {center ?? <Text style={[t.headline, { color: colors.label }]}>{title}</Text>}
-      {trailing ?? <View style={styles.headerSpacer} />}
+      <View style={styles.center}>
+        {center ?? <Text style={[t.headline, { color: colors.label }]}>{title}</Text>}
+      </View>
+      {trailing ?? <View style={styles.slot} />}
     </View>
   );
 }
@@ -56,14 +59,18 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  backBtn: {
+  slot: {
     width: 44,
+  },
+  backBtn: {
     height: 44,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 22,
   },
-  headerSpacer: {
-    width: 44,
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

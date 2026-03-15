@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { darkColors, lightColors } from "@/src/theme/tokens";
+import { darkColors, lightColors, elevation } from "@/src/theme/tokens";
 
 export type ErrorFallbackProps = {
   error: Error;
@@ -225,14 +225,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 24,
     minWidth: 200,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...elevation.md,
   },
   buttonText: {
     fontFamily: "Inter_600SemiBold",

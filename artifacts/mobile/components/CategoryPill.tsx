@@ -1,8 +1,9 @@
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import Colors from "@/constants/colors";
+import Colors, { spectral } from "@/constants/colors";
 
 type Props = {
   label: string;
@@ -19,32 +20,42 @@ export function CategoryPill({ label, selected, onPress }: Props) {
         Haptics.selectionAsync();
         onPress();
       }}
-      style={[
-        styles.pill,
-        {
-          backgroundColor: selected ? C.tint : C.card,
-          borderColor: selected ? C.tint : C.border,
-        },
-      ]}
+      style={styles.wrapper}
     >
-      <Text
-        style={[
-          styles.label,
-          { color: selected ? "#FFFFFF" : C.textSecondary },
-        ]}
-      >
-        {label}
-      </Text>
+      {selected ? (
+        <LinearGradient
+          colors={[spectral.green, spectral.blue, spectral.violet]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.pill}
+        >
+          <Text style={[styles.label, { color: "#FFFFFF" }]}>{label}</Text>
+        </LinearGradient>
+      ) : (
+        <View
+          style={[
+            styles.pill,
+            { backgroundColor: C.card, borderColor: C.border, borderWidth: 1 },
+          ]}
+        >
+          <Text style={[styles.label, { color: C.textSecondary }]}>
+            {label}
+          </Text>
+        </View>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    borderRadius: 20,
+    overflow: "hidden",
+  },
   pill: {
     paddingHorizontal: 16,
     paddingVertical: 7,
     borderRadius: 20,
-    borderWidth: 1,
   },
   label: {
     fontSize: 13,

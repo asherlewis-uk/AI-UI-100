@@ -1,9 +1,10 @@
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
   Alert,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -19,8 +20,10 @@ import Colors, { spectral } from "@/constants/colors";
 import { useChats } from "@/context/ChatsContext";
 import { useSettings, type ThemePreference } from "@/context/SettingsContext";
 
+type FeatherIconName = React.ComponentProps<typeof Feather>["name"];
+
 type SettingRowProps = {
-  icon: string;
+  icon: FeatherIconName;
   label: string;
   value?: string;
   onPress?: () => void;
@@ -48,7 +51,7 @@ function SettingRow({
     >
       <View style={[styles.settingIcon, { backgroundColor: C.cardAlt }]}>
         <Feather
-          name={icon as any}
+          name={icon}
           size={16}
           color={destructive ? C.error : C.teal}
         />
@@ -125,6 +128,9 @@ function ThemeSelector() {
   );
 }
 
+const PRIVACY_URL = "https://persona.app/privacy";
+const TERMS_URL = "https://persona.app/terms";
+
 export default function SettingsScreen() {
   const C = Colors.dark;
   const insets = useSafeAreaInsets();
@@ -167,6 +173,10 @@ export default function SettingsScreen() {
         title: "Persona Chat Export",
       });
     }
+  };
+
+  const handleOpenLink = (url: string) => {
+    Linking.openURL(url);
   };
 
   return (
@@ -259,12 +269,16 @@ export default function SettingsScreen() {
         <View style={[styles.settingsGroup, { backgroundColor: C.card }]}>
           <SettingRow icon="info" label="Version" value="1.0.0" />
           <View style={[styles.rowDivider, { backgroundColor: C.border }]} />
-          <SettingRow icon="shield" label="Privacy Policy" onPress={() => {}} />
+          <SettingRow
+            icon="shield"
+            label="Privacy Policy"
+            onPress={() => handleOpenLink(PRIVACY_URL)}
+          />
           <View style={[styles.rowDivider, { backgroundColor: C.border }]} />
           <SettingRow
             icon="file-text"
             label="Terms of Service"
-            onPress={() => {}}
+            onPress={() => handleOpenLink(TERMS_URL)}
           />
         </View>
 

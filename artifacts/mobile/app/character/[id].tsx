@@ -130,10 +130,10 @@ export default function CharacterDetailScreen() {
                 key={tag}
                 style={[
                   styles.tag,
-                  { backgroundColor: C.tintGlow, borderColor: C.tint + "44" },
+                  { backgroundColor: C.tealGhost, borderColor: C.tealSubtle },
                 ]}
               >
-                <Text style={[styles.tagText, { color: C.tintLight }]}>{tag}</Text>
+                <Text style={[styles.tagText, { color: C.tealDim }]}>{tag}</Text>
               </View>
             ))}
           </View>

@@ -18,7 +18,7 @@ export function MessageBubble({ message }: Props) {
         style={[
           styles.bubble,
           isUser
-            ? [styles.userBubble, { backgroundColor: C.tint }]
+            ? [styles.userBubble, { backgroundColor: C.teal }]
             : [styles.assistantBubble, { backgroundColor: C.card }],
         ]}
       >

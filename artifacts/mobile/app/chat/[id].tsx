@@ -305,7 +305,7 @@ export default function ChatScreen() {
               styles.sendBtn,
               {
                 backgroundColor:
-                  inputText.trim() && !isStreaming ? C.tint : C.card,
+                  inputText.trim() && !isStreaming ? C.teal : C.card,
                 opacity: pressed ? 0.8 : 1,
               },
             ]}

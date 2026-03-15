@@ -117,7 +117,7 @@ export default function ChatsScreen() {
             </Text>
             <Pressable
               onPress={() => router.push("/")}
-              style={[styles.discoverBtn, { backgroundColor: C.tint }]}
+              style={[styles.discoverBtn, { backgroundColor: C.teal }]}
             >
               <Text style={styles.discoverBtnText}>Browse Personas</Text>
             </Pressable>

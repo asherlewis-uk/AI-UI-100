@@ -28,7 +28,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
     backgroundSecondary: isDark ? "#1C1C1E" : "#F2F2F7",
     text: isDark ? "#FFFFFF" : "#000000",
     textSecondary: isDark ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.7)",
-    link: "#007AFF",
+    link: "#2DD4BF",
     buttonText: "#FFFFFF",
   };
 
@@ -69,7 +69,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
             {
               top: insets.top + 16,
               backgroundColor: theme.backgroundSecondary,
-              opacity: pressed ? 0.8 : 1,
+              opacity: pressed ? 0.75 : 1,
             },
           ]}
         >
@@ -92,7 +92,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
             styles.button,
             {
               backgroundColor: theme.link,
-              opacity: pressed ? 0.9 : 1,
+              opacity: pressed ? 0.75 : 1,
               transform: [{ scale: pressed ? 0.98 : 1 }],
             },
           ]}
@@ -136,7 +136,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                   accessibilityRole="button"
                   style={({ pressed }) => [
                     styles.closeButton,
-                    { opacity: pressed ? 0.6 : 1 },
+                    { opacity: pressed ? 0.75 : 1 },
                   ]}
                 >
                   <Feather name="x" size={24} color={theme.text} />
@@ -197,12 +197,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "700",
+    fontFamily: "Inter_700Bold",
     textAlign: "center",
     lineHeight: 40,
   },
   message: {
     fontSize: 16,
+    fontFamily: "Inter_400Regular",
     textAlign: "center",
     lineHeight: 24,
   },
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   buttonText: {
-    fontWeight: "600",
+    fontFamily: "Inter_600SemiBold",
     textAlign: "center",
     fontSize: 16,
   },
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: "600",
+    fontFamily: "Inter_600SemiBold",
   },
   closeButton: {
     width: 44,

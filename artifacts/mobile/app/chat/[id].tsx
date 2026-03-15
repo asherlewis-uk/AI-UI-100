@@ -36,7 +36,7 @@ function genId(): string {
 }
 
 export default function ChatScreen() {
-  const { colors, spacing: sp, typography: t, radii, gradients, hitTarget } =
+  const { colors, spacing: sp, typography: t, radii, gradients, hitTarget, opacity: op, layout } =
     useTheme();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -227,9 +227,44 @@ export default function ChatScreen() {
       <View
         style={[styles.container, { backgroundColor: colors.systemBackground }]}
       >
-        <Text style={[t.body, { color: colors.label }]}>
-          Character not found.
-        </Text>
+        <View style={styles.emptyState}>
+          <View
+            style={[
+              styles.emptyIcon,
+              { backgroundColor: colors.secondarySystemBackground },
+            ]}
+          >
+            <Feather name="alert-circle" size={32} color={colors.tintMuted} />
+          </View>
+          <Text style={[t.title3, { color: colors.label }]}>
+            Character not found
+          </Text>
+          <Text
+            style={[
+              t.subheadline,
+              { color: colors.secondaryLabel, textAlign: "center" },
+            ]}
+          >
+            This character may have been removed or is no longer available.
+          </Text>
+          <Pressable
+            onPress={() => router.back()}
+            style={({ pressed }) => [
+              styles.emptyBackBtn,
+              {
+                backgroundColor: colors.tint,
+                opacity: pressed ? op.pressed : 1,
+              },
+            ]}
+            accessibilityLabel="Go back"
+            accessibilityRole="button"
+          >
+            <Feather name="arrow-left" size={16} color={colors.onTint} />
+            <Text style={[t.subheadline, { color: colors.onTint, fontFamily: "Inter_600SemiBold" }]}>
+              Go Back
+            </Text>
+          </Pressable>
+        </View>
       </View>
     );
   }
@@ -247,7 +282,7 @@ export default function ChatScreen() {
         style={[
           styles.header,
           {
-            paddingTop: (Platform.OS === "web" ? 67 : insets.top) + 8,
+            paddingTop: (Platform.OS === "web" ? layout.webTopPadding : insets.top) + 8,
             backgroundColor: colors.systemBackground,
             borderBottomColor: colors.separator,
           },
@@ -255,7 +290,10 @@ export default function ChatScreen() {
       >
         <Pressable
           onPress={() => router.back()}
-          style={styles.backBtn}
+          style={({ pressed }) => [
+            styles.backBtn,
+            { opacity: pressed ? op.pressed : 1 },
+          ]}
           accessibilityLabel="Go back"
           accessibilityRole="button"
         >
@@ -334,7 +372,7 @@ export default function ChatScreen() {
             disabled={!inputText.trim() || isStreaming}
             style={({ pressed }) => [
               styles.sendBtn,
-              { opacity: pressed ? 0.8 : 1 },
+              { opacity: pressed ? op.pressed : 1 },
             ]}
             accessibilityLabel="Send message"
             accessibilityRole="button"
@@ -348,7 +386,7 @@ export default function ChatScreen() {
                 end={gradients.spectralDiagonal.end}
                 style={styles.sendGradient}
               >
-                <Feather name="arrow-up" size={18} color="#fff" />
+                <Feather name="arrow-up" size={18} color={colors.onTint} />
               </LinearGradient>
             ) : (
               <View
@@ -433,5 +471,29 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 40,
+    gap: 12,
+  },
+  emptyIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  emptyBackBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    marginTop: 8,
   },
 });

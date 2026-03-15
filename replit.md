@@ -45,7 +45,10 @@ An unbranded iOS 26-native Expo mobile app inspired by Character.ai's UX. Full-s
 
 ## API Endpoints
 - `GET /api/healthz` — health check
-- `POST /api/chat` — streaming SSE chat, body: `{ messages: [{role, content}] }`
+- `POST /api/chat` — streaming SSE chat, body: `{ messages, provider?, model?, customEndpoint? }`
+- `GET /api/providers` — list available AI providers with models and availability
+- `GET /api/providers/ollama/models?endpoint=` — auto-discover Ollama models
+- `POST /api/providers/check` — test provider connectivity, body: `{ provider, customEndpoint? }`
 
 ## Mobile App Structure
 ```
@@ -62,6 +65,7 @@ artifacts/mobile/
     chat/[id].tsx         # Chat screen with SSE streaming + custom instructions
     settings/
       index.tsx           # Settings (iOS grouped list, SegmentedControl theme, Switch haptics)
+      ai-provider.tsx     # AI Provider settings (provider picker, model picker, endpoint config)
       custom-instructions.tsx  # Custom instructions editor (grouped surfaces)
       archived-chats.tsx  # Archived conversations manager
   src/
@@ -79,17 +83,25 @@ artifacts/mobile/
   components/             # App-specific components (CharacterCard, MessageBubble, etc.)
   context/
     ChatsContext.tsx       # AsyncStorage-backed conversation state + archive
-    SettingsContext.tsx     # Theme, haptic feedback, custom instructions
+    SettingsContext.tsx     # Theme, haptic feedback, custom instructions, AI provider/model selection
   data/characters.ts      # 18 personas with system prompts + greetings
   lib/api.ts              # getApiUrl() helper
 ```
 
-## AI Integration
-- Provider: OpenAI via Replit AI Integration
-- Model: `gpt-5.2`, max_completion_tokens: 8192
-- Env vars: `AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`
+## AI Integration (Multi-Provider)
+- **Provider abstraction** (`artifacts/api-server/src/providers.ts`): Registry of 5 providers, each using OpenAI-compatible SDK
+- **Supported providers**:
+  - OpenAI (default, via Replit AI Integration): `AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`
+  - Anthropic (OpenAI-compatible): `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL`
+  - Google Gemini (OpenAI-compatible): `GEMINI_API_KEY`, `GEMINI_BASE_URL`
+  - Ollama (local, no API key): `OLLAMA_BASE_URL` or custom endpoint
+  - Custom (any OpenAI-compatible API): `CUSTOM_LLM_BASE_URL`, `CUSTOM_LLM_API_KEY`
+- Default model: `gpt-5.2`, max_completion_tokens: 8192
 - Streaming via SSE; client uses `expo/fetch` + ReadableStream reader
 - Custom instructions (aboutUser, responseStyle) appended to character system prompts
+- Provider/model selection persisted in SettingsContext (`settings.ai.provider`, `settings.ai.model`, `settings.ai.customEndpoint`)
+- SSRF protection: custom endpoints restricted to localhost/private network IPs
+- Ollama auto-discovery via `/api/tags` endpoint
 
 ## Dev Notes
 - Inverted FlatList for chat (newest at bottom)

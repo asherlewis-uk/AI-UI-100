@@ -14,11 +14,25 @@ export type CustomInstructions = {
   responseStyle: string;
 };
 
+export type ProviderID =
+  | "openai"
+  | "anthropic"
+  | "gemini"
+  | "ollama"
+  | "custom";
+
+export type ProviderSettings = {
+  provider: ProviderID;
+  model: string;
+  customEndpoint: string;
+};
+
 export type Settings = {
   theme: ThemePreference;
   hapticFeedback: boolean;
   customInstructions: CustomInstructions;
   archivedConversationIds: string[];
+  ai: ProviderSettings;
 };
 
 type SettingsContextType = {
@@ -28,6 +42,9 @@ type SettingsContextType = {
   updateHapticFeedback: (enabled: boolean) => Promise<void>;
   updateCustomInstructions: (instructions: CustomInstructions) => Promise<void>;
   syncArchivedIds: (ids: string[]) => void;
+  updateProvider: (provider: ProviderID) => Promise<void>;
+  updateModel: (model: string) => Promise<void>;
+  updateCustomEndpoint: (endpoint: string) => Promise<void>;
 };
 
 const SETTINGS_KEY = "persona:settings";
@@ -40,6 +57,11 @@ const defaultSettings: Settings = {
     responseStyle: "",
   },
   archivedConversationIds: [],
+  ai: {
+    provider: "openai",
+    model: "gpt-5.2",
+    customEndpoint: "",
+  },
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
@@ -57,7 +79,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       const raw = await AsyncStorage.getItem(SETTINGS_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<Settings>;
-        setSettings({ ...defaultSettings, ...parsed });
+        setSettings({ ...defaultSettings, ...parsed, ai: { ...defaultSettings.ai, ...(parsed.ai ?? {}) } });
       }
     } catch (e) {
       console.error("Failed to load settings", e);
@@ -109,6 +131,30 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const updateProvider = useCallback(async (provider: ProviderID) => {
+    setSettings((prev) => {
+      const updated = { ...prev, ai: { ...prev.ai, provider } };
+      saveSettings(updated);
+      return updated;
+    });
+  }, []);
+
+  const updateModel = useCallback(async (model: string) => {
+    setSettings((prev) => {
+      const updated = { ...prev, ai: { ...prev.ai, model } };
+      saveSettings(updated);
+      return updated;
+    });
+  }, []);
+
+  const updateCustomEndpoint = useCallback(async (endpoint: string) => {
+    setSettings((prev) => {
+      const updated = { ...prev, ai: { ...prev.ai, customEndpoint: endpoint } };
+      saveSettings(updated);
+      return updated;
+    });
+  }, []);
+
   return (
     <SettingsContext.Provider
       value={{
@@ -118,6 +164,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         updateHapticFeedback,
         updateCustomInstructions,
         syncArchivedIds,
+        updateProvider,
+        updateModel,
+        updateCustomEndpoint,
       }}
     >
       {children}

@@ -132,9 +132,7 @@ export default function AIProviderScreen() {
   const handleSelectProvider = async (id: ProviderID) => {
     await updateProvider(id);
     const providerConfig = providers.find((p) => p.id === id);
-    if (providerConfig?.defaultModel) {
-      await updateModel(providerConfig.defaultModel);
-    }
+    await updateModel(providerConfig?.defaultModel ?? "");
     setConnectionStatus("idle");
   };
 

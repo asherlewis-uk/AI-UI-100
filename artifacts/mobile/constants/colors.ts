@@ -17,6 +17,21 @@ const palette = {
   error: "#EF4444",
   success: "#22C55E",
   overlay: "rgba(0,0,0,0.6)",
+  teal: "#2DD4BF",
+  tealDim: "rgba(45,212,191,0.6)",
+  tealMuted: "rgba(45,212,191,0.35)",
+  tealSubtle: "rgba(45,212,191,0.15)",
+  tealGhost: "rgba(45,212,191,0.08)",
+};
+
+export const spectral = {
+  green: "#34D399",
+  blue: "#60A5FA",
+  violet: "#C084FC",
+  pink: "#F472B6",
+  orange: "#FB923C",
+  gradient: ["#34D399", "#60A5FA", "#C084FC", "#F472B6", "#FB923C"] as const,
+  gradientShort: ["#34D399", "#60A5FA", "#C084FC"] as const,
 };
 
 export default {
@@ -40,5 +55,10 @@ export default {
     error: palette.error,
     success: palette.success,
     overlay: palette.overlay,
+    teal: palette.teal,
+    tealDim: palette.tealDim,
+    tealMuted: palette.tealMuted,
+    tealSubtle: palette.tealSubtle,
+    tealGhost: palette.tealGhost,
   },
 };

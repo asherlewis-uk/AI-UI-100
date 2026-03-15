@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
 import {
+  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -9,17 +10,47 @@ import {
   Text,
   View,
 } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ChatListItem } from "@/components/ChatListItem";
 import Colors from "@/constants/colors";
 import { useChats } from "@/context/ChatsContext";
-import { CHARACTERS, getCharacterById } from "@/data/characters";
+import { getCharacterById } from "@/data/characters";
+
+function SwipeActions({
+  onArchive,
+  onDelete,
+}: {
+  onArchive: () => void;
+  onDelete: () => void;
+}) {
+  const C = Colors.dark;
+  return (
+    <View style={styles.swipeActions}>
+      <Pressable
+        onPress={onArchive}
+        style={[styles.swipeBtn, { backgroundColor: C.teal }]}
+      >
+        <Feather name="archive" size={18} color="#fff" />
+        <Text style={styles.swipeBtnText}>Archive</Text>
+      </Pressable>
+      <Pressable
+        onPress={onDelete}
+        style={[styles.swipeBtn, { backgroundColor: C.error }]}
+      >
+        <Feather name="trash-2" size={18} color="#fff" />
+        <Text style={styles.swipeBtnText}>Delete</Text>
+      </Pressable>
+    </View>
+  );
+}
 
 export default function ChatsScreen() {
   const C = Colors.dark;
   const insets = useSafeAreaInsets();
-  const { conversations, isLoaded } = useChats();
+  const { conversations, isLoaded, archiveConversation, deleteConversation } =
+    useChats();
 
   const topPadding = Platform.OS === "web" ? 67 : 0;
 
@@ -27,6 +58,31 @@ export default function ChatsScreen() {
     const char = getCharacterById(c.characterId);
     return !!char;
   });
+
+  const handleArchive = (id: string, name: string) => {
+    Alert.alert("Archive Chat", `Archive your conversation with ${name}?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Archive",
+        onPress: () => archiveConversation(id),
+      },
+    ]);
+  };
+
+  const handleDelete = (id: string, name: string) => {
+    Alert.alert(
+      "Delete Chat",
+      `Permanently delete your conversation with ${name}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteConversation(id),
+        },
+      ]
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: C.background }]}>
@@ -38,21 +94,24 @@ export default function ChatsScreen() {
           { paddingTop: Platform.OS === "web" ? topPadding : 0 },
         ]}
       >
-        {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.title, { color: C.text }]}>Chats</Text>
         </View>
 
         {!isLoaded ? (
           <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: C.textSecondary }]}>Loading...</Text>
+            <Text style={[styles.emptyText, { color: C.textSecondary }]}>
+              Loading...
+            </Text>
           </View>
         ) : validConversations.length === 0 ? (
           <View style={styles.emptyContainer}>
             <View style={[styles.emptyIcon, { backgroundColor: C.card }]}>
-              <Feather name="message-circle" size={32} color={C.textMuted} />
+              <Feather name="message-circle" size={32} color={C.tealMuted} />
             </View>
-            <Text style={[styles.emptyTitle, { color: C.text }]}>No chats yet</Text>
+            <Text style={[styles.emptyTitle, { color: C.text }]}>
+              No chats yet
+            </Text>
             <Text style={[styles.emptyText, { color: C.textSecondary }]}>
               Discover personas and start a conversation
             </Text>
@@ -70,8 +129,29 @@ export default function ChatsScreen() {
               const char = getCharacterById(conv.characterId)!;
               return (
                 <View key={conv.id}>
-                  <ChatListItem conversation={conv} character={char} />
-                  <View style={[styles.itemDivider, { backgroundColor: C.border, marginLeft: 84 }]} />
+                  <Swipeable
+                    renderRightActions={() => (
+                      <SwipeActions
+                        onArchive={() =>
+                          handleArchive(conv.id, conv.characterName)
+                        }
+                        onDelete={() =>
+                          handleDelete(conv.id, conv.characterName)
+                        }
+                      />
+                    )}
+                    overshootRight={false}
+                  >
+                    <View style={{ backgroundColor: C.background }}>
+                      <ChatListItem conversation={conv} character={char} />
+                    </View>
+                  </Swipeable>
+                  <View
+                    style={[
+                      styles.itemDivider,
+                      { backgroundColor: C.border, marginLeft: 84 },
+                    ]}
+                  />
                 </View>
               );
             })}
@@ -140,5 +220,19 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 15,
     fontFamily: "Inter_600SemiBold",
+  },
+  swipeActions: {
+    flexDirection: "row",
+  },
+  swipeBtn: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+    gap: 4,
+  },
+  swipeBtnText: {
+    color: "#fff",
+    fontSize: 11,
+    fontFamily: "Inter_500Medium",
   },
 });

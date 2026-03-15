@@ -13,6 +13,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { darkColors, lightColors } from "@/src/theme/tokens";
+
 export type ErrorFallbackProps = {
   error: Error;
   resetError: () => void;
@@ -22,14 +24,16 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const insets = useSafeAreaInsets();
+  const palette = isDark ? darkColors : lightColors;
 
   const theme = {
-    background: isDark ? "#000000" : "#FFFFFF",
-    backgroundSecondary: isDark ? "#1C1C1E" : "#F2F2F7",
-    text: isDark ? "#FFFFFF" : "#000000",
-    textSecondary: isDark ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.7)",
-    link: "#2DD4BF",
-    buttonText: "#FFFFFF",
+    background: palette.systemBackground,
+    backgroundSecondary: palette.secondarySystemBackground,
+    text: palette.label,
+    textSecondary: palette.secondaryLabel,
+    link: palette.tint,
+    buttonText: palette.onTint,
+    separator: palette.separator,
   };
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -121,9 +125,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                 style={[
                   styles.modalHeader,
                   {
-                    borderBottomColor: isDark
-                      ? "rgba(255, 255, 255, 0.1)"
-                      : "rgba(0, 0, 0, 0.1)",
+                    borderBottomColor: theme.separator,
                   },
                 ]}
               >

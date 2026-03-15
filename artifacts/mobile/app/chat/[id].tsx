@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CharacterAvatar } from "@/components/CharacterAvatar";
 import { MessageBubble } from "@/components/MessageBubble";
 import { TypingIndicator } from "@/components/TypingIndicator";
+import { ScreenHeader } from "@/src/components";
 import {
   generateConversationId,
   useChats,
@@ -36,7 +37,7 @@ function genId(): string {
 }
 
 export default function ChatScreen() {
-  const { colors, spacing: sp, typography: t, radii, gradients, hitTarget, opacity: op, layout } =
+  const { colors, spacing: sp, typography: t, radii, gradients, hitTarget, opacity: op } =
     useTheme();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -278,47 +279,30 @@ export default function ChatScreen() {
       behavior="padding"
       keyboardVerticalOffset={0}
     >
-      <View
-        style={[
-          styles.header,
-          {
-            paddingTop: (Platform.OS === "web" ? layout.webTopPadding : insets.top) + 8,
-            backgroundColor: colors.systemBackground,
-            borderBottomColor: colors.separator,
-          },
-        ]}
-      >
-        <Pressable
-          onPress={() => router.back()}
-          style={({ pressed }) => [
-            styles.backBtn,
-            { opacity: pressed ? op.pressed : 1 },
-          ]}
-          accessibilityLabel="Go back"
-          accessibilityRole="button"
-        >
-          <Feather name="arrow-left" size={22} color={colors.label} />
-        </Pressable>
-        <View style={styles.headerCenter}>
-          <CharacterAvatar
-            colors={character.avatarColors}
-            emoji={character.avatarEmoji}
-            size={36}
-          />
-          <View>
-            <Text
-              style={[
-                t.callout,
-                { color: colors.label, fontFamily: "Inter_600SemiBold" },
-              ]}
-            >
-              {character.name}
-            </Text>
-            <Text style={[t.caption2, { color: colors.tint }]}>Online</Text>
+      <ScreenHeader
+        onBack={() => router.back()}
+        backgroundColor={colors.systemBackground}
+        center={
+          <View style={styles.headerCenter}>
+            <CharacterAvatar
+              colors={character.avatarColors}
+              emoji={character.avatarEmoji}
+              size={36}
+            />
+            <View>
+              <Text
+                style={[
+                  t.callout,
+                  { color: colors.label, fontFamily: "Inter_600SemiBold" },
+                ]}
+              >
+                {character.name}
+              </Text>
+              <Text style={[t.caption2, { color: colors.tint }]}>Online</Text>
+            </View>
           </View>
-        </View>
-        <View style={styles.headerRight} />
-      </View>
+        }
+      />
 
       <FlatList
         data={reversedMessages}
@@ -413,29 +397,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  backBtn: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 22,
-  },
   headerCenter: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
-  },
-  headerRight: {
-    width: 44,
   },
   messageList: {
     paddingVertical: 12,

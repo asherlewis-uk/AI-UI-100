@@ -6,12 +6,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../theme/useTheme";
 
 type Props = {
-  title: string;
+  title?: string;
+  center?: React.ReactNode;
   onBack: () => void;
   trailing?: React.ReactNode;
+  backgroundColor?: string;
 };
 
-export function ScreenHeader({ title, onBack, trailing }: Props) {
+export function ScreenHeader({ title, center, onBack, trailing, backgroundColor }: Props) {
   const { colors, spacing: sp, typography: t, opacity: op, layout } =
     useTheme();
   const insets = useSafeAreaInsets();
@@ -25,6 +27,7 @@ export function ScreenHeader({ title, onBack, trailing }: Props) {
         {
           paddingTop: topPad + sp.sm,
           borderBottomColor: colors.separator,
+          backgroundColor,
         },
       ]}
     >
@@ -39,7 +42,7 @@ export function ScreenHeader({ title, onBack, trailing }: Props) {
       >
         <Feather name="arrow-left" size={22} color={colors.label} />
       </Pressable>
-      <Text style={[t.headline, { color: colors.label }]}>{title}</Text>
+      {center ?? <Text style={[t.headline, { color: colors.label }]}>{title}</Text>}
       {trailing ?? <View style={styles.headerSpacer} />}
     </View>
   );

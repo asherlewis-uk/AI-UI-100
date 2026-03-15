@@ -15,6 +15,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ChatsProvider } from "@/context/ChatsContext";
+import { SettingsProvider } from "@/context/SettingsContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -33,6 +34,21 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="chat/[id]"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="settings/index"
+        options={{
+          headerShown: false,
+          presentation: "modal",
+        }}
+      />
+      <Stack.Screen
+        name="settings/custom-instructions"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="settings/archived-chats"
         options={{ headerShown: false }}
       />
     </Stack>
@@ -59,13 +75,15 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <ChatsProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <KeyboardProvider>
-                <RootLayoutNav />
-              </KeyboardProvider>
-            </GestureHandlerRootView>
-          </ChatsProvider>
+          <SettingsProvider>
+            <ChatsProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <KeyboardProvider>
+                  <RootLayoutNav />
+                </KeyboardProvider>
+              </GestureHandlerRootView>
+            </ChatsProvider>
+          </SettingsProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

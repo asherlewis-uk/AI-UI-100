@@ -44,7 +44,7 @@ function ClassicTabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: C.tint,
-        tabBarInactiveTintColor: C.tabIconDefault,
+        tabBarInactiveTintColor: C.tealMuted,
         tabBarStyle: {
           position: "absolute",
           backgroundColor: isIOS ? "transparent" : C.surface,

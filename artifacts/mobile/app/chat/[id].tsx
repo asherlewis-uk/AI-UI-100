@@ -25,6 +25,7 @@ import {
   useChats,
   type Message,
 } from "@/context/ChatsContext";
+import { useSettings } from "@/context/SettingsContext";
 import { getCharacterById } from "@/data/characters";
 import { getApiUrl } from "@/lib/api";
 
@@ -39,6 +40,7 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getConversation, upsertConversation, updateLastMessage } = useChats();
+  const { settings } = useSettings();
 
   const character = getCharacterById(id);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
@@ -79,12 +81,26 @@ export default function ChatScreen() {
     }
   }, [character]);
 
+  const buildSystemPrompt = (): string => {
+    let prompt = character?.systemPrompt ?? "";
+    const { aboutUser, responseStyle } = settings.customInstructions;
+    if (aboutUser.trim()) {
+      prompt += `\n\n[User context: ${aboutUser.trim()}]`;
+    }
+    if (responseStyle.trim()) {
+      prompt += `\n\n[Response preferences: ${responseStyle.trim()}]`;
+    }
+    return prompt;
+  };
+
   const handleSend = async () => {
     if (!inputText.trim() || isStreaming || !character) return;
 
     const text = inputText.trim();
     setInputText("");
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (settings.hapticFeedback) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
 
     const capturedMessages = [...localMessages];
     const userMsg: Message = {
@@ -99,7 +115,7 @@ export default function ChatScreen() {
     setShowTyping(true);
 
     const apiMessages = [
-      { role: "system", content: character.systemPrompt },
+      { role: "system", content: buildSystemPrompt() },
       ...capturedMessages.map((m) => ({ role: m.role, content: m.content })),
       { role: "user", content: text },
     ];
@@ -169,7 +185,6 @@ export default function ChatScreen() {
         }
       }
 
-      // Persist final state
       const assistantMsg: Message = {
         id: assistantId,
         role: "assistant",
@@ -218,7 +233,6 @@ export default function ChatScreen() {
       behavior="padding"
       keyboardVerticalOffset={0}
     >
-      {/* Header */}
       <View
         style={[
           styles.header,
@@ -240,13 +254,12 @@ export default function ChatScreen() {
           />
           <View>
             <Text style={[styles.headerName, { color: C.text }]}>{character.name}</Text>
-            <Text style={[styles.headerStatus, { color: C.tintLight }]}>Online</Text>
+            <Text style={[styles.headerStatus, { color: C.teal }]}>Online</Text>
           </View>
         </View>
         <View style={styles.headerRight} />
       </View>
 
-      {/* Messages */}
       <FlatList
         data={reversedMessages}
         keyExtractor={(item) => item.id}
@@ -259,7 +272,6 @@ export default function ChatScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Input area */}
       <View
         style={[
           styles.inputContainer,

@@ -26,15 +26,22 @@ export type Conversation = {
 
 type ChatsContextType = {
   conversations: Conversation[];
+  archivedConversations: Conversation[];
   getConversation: (characterId: string) => Conversation | undefined;
   upsertConversation: (conversation: Conversation) => Promise<void>;
   deleteConversation: (conversationId: string) => Promise<void>;
   addMessage: (conversationId: string, message: Message) => Promise<void>;
   updateLastMessage: (conversationId: string, message: Message) => Promise<void>;
+  archiveConversation: (conversationId: string) => Promise<void>;
+  restoreConversation: (conversationId: string) => Promise<void>;
+  deleteArchivedConversation: (conversationId: string) => Promise<void>;
+  clearAllConversations: () => Promise<void>;
+  exportAllData: () => string;
   isLoaded: boolean;
 };
 
 const STORAGE_KEY = "persona:conversations";
+const ARCHIVE_KEY = "persona:archived";
 
 const ChatsContext = createContext<ChatsContextType | null>(null);
 
@@ -50,18 +57,26 @@ export function generateConversationId(characterId: string): string {
 
 export function ChatsProvider({ children }: { children: React.ReactNode }) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [archivedConversations, setArchivedConversations] = useState<Conversation[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    loadConversations();
+    loadAll();
   }, []);
 
-  const loadConversations = async () => {
+  const loadAll = async () => {
     try {
-      const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Conversation[];
+      const [rawConvs, rawArchived] = await Promise.all([
+        AsyncStorage.getItem(STORAGE_KEY),
+        AsyncStorage.getItem(ARCHIVE_KEY),
+      ]);
+      if (rawConvs) {
+        const parsed = JSON.parse(rawConvs) as Conversation[];
         setConversations(parsed.sort((a, b) => b.lastMessageTime - a.lastMessageTime));
+      }
+      if (rawArchived) {
+        const parsed = JSON.parse(rawArchived) as Conversation[];
+        setArchivedConversations(parsed.sort((a, b) => b.lastMessageTime - a.lastMessageTime));
       }
     } catch (e) {
       console.error("Failed to load conversations", e);
@@ -75,6 +90,14 @@ export function ChatsProvider({ children }: { children: React.ReactNode }) {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(convs));
     } catch (e) {
       console.error("Failed to save conversations", e);
+    }
+  };
+
+  const saveArchived = async (convs: Conversation[]) => {
+    try {
+      await AsyncStorage.setItem(ARCHIVE_KEY, JSON.stringify(convs));
+    } catch (e) {
+      console.error("Failed to save archived conversations", e);
     }
   };
 
@@ -152,15 +175,78 @@ export function ChatsProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const archiveConversation = useCallback(async (conversationId: string) => {
+    setConversations((prev) => {
+      const toArchive = prev.find((c) => c.id === conversationId);
+      const updated = prev.filter((c) => c.id !== conversationId);
+      saveConversations(updated);
+      if (toArchive) {
+        setArchivedConversations((archPrev) => {
+          const archUpdated = [toArchive, ...archPrev];
+          saveArchived(archUpdated);
+          return archUpdated;
+        });
+      }
+      return updated;
+    });
+  }, []);
+
+  const restoreConversation = useCallback(async (conversationId: string) => {
+    setArchivedConversations((prev) => {
+      const toRestore = prev.find((c) => c.id === conversationId);
+      const updated = prev.filter((c) => c.id !== conversationId);
+      saveArchived(updated);
+      if (toRestore) {
+        setConversations((convPrev) => {
+          const convUpdated = [toRestore, ...convPrev].sort(
+            (a, b) => b.lastMessageTime - a.lastMessageTime
+          );
+          saveConversations(convUpdated);
+          return convUpdated;
+        });
+      }
+      return updated;
+    });
+  }, []);
+
+  const deleteArchivedConversation = useCallback(async (conversationId: string) => {
+    setArchivedConversations((prev) => {
+      const updated = prev.filter((c) => c.id !== conversationId);
+      saveArchived(updated);
+      return updated;
+    });
+  }, []);
+
+  const clearAllConversations = useCallback(async () => {
+    setConversations([]);
+    setArchivedConversations([]);
+    await AsyncStorage.multiRemove([STORAGE_KEY, ARCHIVE_KEY]);
+  }, []);
+
+  const exportAllData = useCallback(() => {
+    const data = {
+      exportedAt: new Date().toISOString(),
+      conversations,
+      archivedConversations,
+    };
+    return JSON.stringify(data, null, 2);
+  }, [conversations, archivedConversations]);
+
   return (
     <ChatsContext.Provider
       value={{
         conversations,
+        archivedConversations,
         getConversation,
         upsertConversation,
         deleteConversation,
         addMessage,
         updateLastMessage,
+        archiveConversation,
+        restoreConversation,
+        deleteArchivedConversation,
+        clearAllConversations,
+        exportAllData,
         isLoaded,
       }}
     >

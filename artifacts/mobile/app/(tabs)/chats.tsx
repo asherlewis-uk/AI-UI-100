@@ -25,12 +25,15 @@ function SwipeActions({
   onArchive: () => void;
   onDelete: () => void;
 }) {
-  const { colors, typography: t } = useTheme();
+  const { colors, typography: t, opacity: op } = useTheme();
   return (
     <View style={styles.swipeActions}>
       <Pressable
         onPress={onArchive}
-        style={[styles.swipeBtn, { backgroundColor: colors.tint }]}
+        style={({ pressed }) => [
+          styles.swipeBtn,
+          { backgroundColor: colors.tint, opacity: pressed ? op.pressed : 1 },
+        ]}
         accessibilityLabel="Archive conversation"
         accessibilityRole="button"
       >
@@ -39,7 +42,10 @@ function SwipeActions({
       </Pressable>
       <Pressable
         onPress={onDelete}
-        style={[styles.swipeBtn, { backgroundColor: colors.destructive }]}
+        style={({ pressed }) => [
+          styles.swipeBtn,
+          { backgroundColor: colors.destructive, opacity: pressed ? op.pressed : 1 },
+        ]}
         accessibilityLabel="Delete conversation"
         accessibilityRole="button"
       >
@@ -51,7 +57,7 @@ function SwipeActions({
 }
 
 export default function ChatsScreen() {
-  const { colors, spacing: sp, typography: t, gradients, screenInsets, layout } =
+  const { colors, spacing: sp, typography: t, gradients, screenInsets, layout, opacity: op } =
     useTheme();
   const { conversations, isLoaded, archiveConversation, deleteConversation } =
     useChats();
@@ -143,7 +149,10 @@ export default function ChatsScreen() {
             </Text>
             <Pressable
               onPress={() => router.push("/")}
-              style={styles.discoverBtn}
+              style={({ pressed }) => [
+                styles.discoverBtn,
+                { opacity: pressed ? op.pressed : 1 },
+              ]}
               accessibilityLabel="Browse personas"
               accessibilityRole="button"
             >

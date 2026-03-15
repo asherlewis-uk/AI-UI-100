@@ -18,6 +18,7 @@ export type Settings = {
   theme: ThemePreference;
   hapticFeedback: boolean;
   customInstructions: CustomInstructions;
+  archivedConversationIds: string[];
 };
 
 type SettingsContextType = {
@@ -26,6 +27,7 @@ type SettingsContextType = {
   updateTheme: (theme: ThemePreference) => Promise<void>;
   updateHapticFeedback: (enabled: boolean) => Promise<void>;
   updateCustomInstructions: (instructions: CustomInstructions) => Promise<void>;
+  syncArchivedIds: (ids: string[]) => void;
 };
 
 const SETTINGS_KEY = "persona:settings";
@@ -37,6 +39,7 @@ const defaultSettings: Settings = {
     aboutUser: "",
     responseStyle: "",
   },
+  archivedConversationIds: [],
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
@@ -98,6 +101,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const syncArchivedIds = useCallback((ids: string[]) => {
+    setSettings((prev) => ({ ...prev, archivedConversationIds: ids }));
+  }, []);
+
   return (
     <SettingsContext.Provider
       value={{
@@ -106,6 +113,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         updateTheme,
         updateHapticFeedback,
         updateCustomInstructions,
+        syncArchivedIds,
       }}
     >
       {children}

@@ -7,6 +7,8 @@ import React, {
   useState,
 } from "react";
 
+import { useSettings } from "./SettingsContext";
+
 export type Message = {
   id: string;
   role: "user" | "assistant";
@@ -59,10 +61,15 @@ export function ChatsProvider({ children }: { children: React.ReactNode }) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [archivedConversations, setArchivedConversations] = useState<Conversation[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { syncArchivedIds } = useSettings();
 
   useEffect(() => {
     loadAll();
   }, []);
+
+  useEffect(() => {
+    syncArchivedIds(archivedConversations.map((c) => c.id));
+  }, [archivedConversations, syncArchivedIds]);
 
   const loadAll = async () => {
     try {

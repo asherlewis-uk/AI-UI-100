@@ -126,7 +126,12 @@ export default function ChatScreen() {
           "Content-Type": "application/json",
           Accept: "text/event-stream",
         },
-        body: JSON.stringify({ messages: apiMessages }),
+        body: JSON.stringify({
+          messages: apiMessages,
+          provider: settings.ai.provider,
+          model: settings.ai.model,
+          customEndpoint: settings.ai.customEndpoint || undefined,
+        }),
       });
 
       if (!response.ok) throw new Error("Failed");

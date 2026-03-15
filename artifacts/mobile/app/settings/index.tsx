@@ -25,6 +25,17 @@ import { useTheme } from "@/src/theme/useTheme";
 const PRIVACY_URL = "https://persona.app/privacy";
 const TERMS_URL = "https://persona.app/terms";
 
+function providerLabel(id: string): string {
+  const labels: Record<string, string> = {
+    openai: "OpenAI",
+    anthropic: "Anthropic",
+    gemini: "Gemini",
+    ollama: "Ollama",
+    custom: "Custom",
+  };
+  return labels[id] ?? id;
+}
+
 const themeOptions: { label: string; value: ThemePreference }[] = [
   { label: "System", value: "system" },
   { label: "Light", value: "light" },
@@ -124,6 +135,18 @@ export default function SettingsScreen() {
             accessory="switch"
             switchValue={settings.hapticFeedback}
             onSwitchChange={updateHapticFeedback}
+            showSeparator={false}
+          />
+        </Surface>
+
+        <SectionHeader title="AI Provider" />
+        <Surface variant="grouped" style={{ marginHorizontal: screenInsets.groupedHorizontal }}>
+          <ListRow
+            icon="cpu"
+            title="AI Provider"
+            subtitle={`${providerLabel(settings.ai.provider)} · ${settings.ai.model}`}
+            accessory="disclosureIndicator"
+            onPress={() => router.push("/settings/ai-provider")}
             showSeparator={false}
           />
         </Surface>

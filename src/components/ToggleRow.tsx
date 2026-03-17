@@ -1,6 +1,8 @@
 import React from "react";
 import { StyleSheet, Switch, Text, View, type StyleProp, type ViewStyle } from "react-native";
 
+import { useSettings } from "@/context/SettingsContext";
+
 import { radii, spacing, typography } from "../theme/tokens";
 import { useTheme } from "../theme/useTheme";
 import { getGlowStyle } from "./themeStyles";
@@ -23,6 +25,9 @@ export function ToggleRow({
   style,
 }: Props) {
   const theme = useTheme();
+  const { settings } = useSettings();
+  const isCompact = settings.density === "compact";
+
   return (
     <View
       style={[
@@ -35,6 +40,10 @@ export function ToggleRow({
             : theme.surface.glassTint,
           opacity: disabled ? 0.6 : 1,
           borderWidth: 1,
+        },
+        {
+          paddingHorizontal: isCompact ? spacing.sm + 4 : spacing.base,
+          paddingVertical: isCompact ? spacing.xs + 6 : spacing.sm,
         },
         style,
       ]}

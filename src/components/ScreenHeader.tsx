@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useSettings } from "@/context/SettingsContext";
+
 import { layout, spacing, typography } from "../theme/tokens";
 import { useTheme } from "../theme/useTheme";
 import { IconButton } from "./IconButton";
@@ -36,10 +38,14 @@ export function ScreenHeader({
   style,
 }: Props) {
   const theme = useTheme();
+  const { settings } = useSettings();
   const navigation = useNavigation<DrawerNavigation>();
   const insets = useSafeAreaInsets();
+  const isCompact = settings.density === "compact";
   const topPad =
-    Platform.OS === "web" ? layout.webTopPadding : insets.top + spacing.sm;
+    Platform.OS === "web"
+      ? layout.webTopPadding - (isCompact ? spacing.sm : 0)
+      : insets.top + (isCompact ? spacing.xs : spacing.sm);
   const resolvedLeading =
     leadingControl ??
     (onBack ? (
@@ -53,7 +59,17 @@ export function ScreenHeader({
     ));
 
   return (
-    <View style={[styles.container, { paddingTop: topPad }, style]}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: topPad,
+          paddingBottom: isCompact ? spacing.sm : spacing.base,
+          gap: isCompact ? spacing.xxs : spacing.xs,
+        },
+        style,
+      ]}
+    >
       <View style={styles.toolbar}>
         <View style={styles.leading}>{resolvedLeading}</View>
         {trailing ? <View style={styles.trailing}>{trailing}</View> : null}

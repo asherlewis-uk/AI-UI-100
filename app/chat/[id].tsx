@@ -15,8 +15,8 @@ import {
   type Message,
   useChats,
 } from "@/context/ChatsContext";
+import { getExecutionCustomEndpoint, useSettings } from "@/context/SettingsContext";
 import { streamChat } from "@/lib/api";
-import { useSettings } from "@/context/SettingsContext";
 import {
   AppShell,
   Composer,
@@ -130,7 +130,10 @@ export default function ChatScreen() {
             messages: requestMessages,
             provider: settings.ai.provider,
             model: settings.ai.model,
-            customEndpoint: settings.ai.customEndpoint || undefined,
+            customEndpoint: getExecutionCustomEndpoint(
+              settings.ai.provider,
+              settings.ai.customEndpoint,
+            ),
           },
           (chunk) => {
             assistantContent = assistantContent
@@ -223,7 +226,9 @@ export default function ChatScreen() {
           contentContainerStyle={styles.messageListContent}
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() =>
-            scrollViewRef.current?.scrollToEnd({ animated: true })
+            scrollViewRef.current?.scrollToEnd({
+              animated: !settings.reducedMotion,
+            })
           }
           showsVerticalScrollIndicator={false}
           style={styles.messageList}

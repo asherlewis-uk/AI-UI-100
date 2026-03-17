@@ -1,15 +1,20 @@
 import { BlurView } from "expo-blur";
 import React, { useState } from "react";
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
+  type NativeSyntheticEvent,
   type StyleProp,
+  type TextInputKeyPressEventData,
   type TextStyle,
   type ViewStyle,
 } from "react-native";
+
+import { useSettings } from "@/context/SettingsContext";
 
 import {
   opacity,
@@ -72,7 +77,9 @@ export function Composer({
 }: Props) {
   const [focused, setFocused] = useState(false);
   const theme = useTheme();
+  const { settings } = useSettings();
   const canSend = value.trim().length > 0 && !disabled && !sending;
+  const isCompact = settings.density === "compact";
   const composerState = disabled
     ? "disabled"
     : sending
@@ -103,7 +110,24 @@ export function Composer({
         ? composerOverlayByState.ready
         : composerState === "focus"
           ? composerOverlayByState.focus
-          : composerOverlayByState.idle;
+        : composerOverlayByState.idle;
+
+  const handleKeyPress = (
+    event: NativeSyntheticEvent<TextInputKeyPressEventData>,
+  ) => {
+    if (!settings.sendWithEnter || Platform.OS !== "web" || !canSend) {
+      return;
+    }
+
+    const nativeEvent = event.nativeEvent as TextInputKeyPressEventData & {
+      shiftKey?: boolean;
+    };
+
+    if (nativeEvent.key === "Enter" && !nativeEvent.shiftKey) {
+      event.preventDefault();
+      onSend?.();
+    }
+  };
 
   return (
     <View
@@ -164,9 +188,22 @@ export function Composer({
             multiline
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
-            style={[typography.body, styles.input, { color: theme.text.primary }]}
+            onKeyPress={handleKeyPress}
             accessibilityLabel={inputLabel ?? placeholder}
             textAlignVertical="top"
+            returnKeyType={
+              settings.sendWithEnter && Platform.OS === "web" ? "send" : "default"
+            }
+            style={[
+              typography.body,
+              styles.input,
+              {
+                color: theme.text.primary,
+                minHeight: isCompact ? 60 : 76,
+                maxHeight: isCompact ? 140 : 160,
+                paddingBottom: isCompact ? spacing.xs : spacing.sm,
+              },
+            ]}
           />
         </View>
         <View
@@ -222,6 +259,9 @@ export function Composer({
                         borderColor: canSend
                           ? theme.border.active
                           : theme.border.idle,
+                        minHeight: isCompact ? 36 : 40,
+                        minWidth: isCompact ? 80 : 88,
+                        paddingHorizontal: isCompact ? spacing.sm + 2 : spacing.base,
                       },
                     ]}
                   >
@@ -277,9 +317,6 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    minHeight: 76,
-    maxHeight: 160,
-    paddingBottom: spacing.sm,
   },
   footerRow: {
     flexDirection: "row",

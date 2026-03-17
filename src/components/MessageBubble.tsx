@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 
 import type { Message } from "@/context/ChatsContext";
+import { useSettings } from "@/context/SettingsContext";
 
 import { radii, spacing, typography } from "../theme/tokens";
 import { useTheme } from "../theme/useTheme";
@@ -15,6 +16,8 @@ type Props = {
 
 export function MessageBubble({ message, failed = false, style }: Props) {
   const theme = useTheme();
+  const { settings } = useSettings();
+  const isCompact = settings.density === "compact";
   const outbound = message.role === "user";
   const bubbleBorder = failed
     ? theme.state.danger
@@ -37,6 +40,9 @@ export function MessageBubble({ message, failed = false, style }: Props) {
             backgroundColor: bubbleBackground,
             borderColor: bubbleBorder,
             borderWidth: 1,
+            paddingHorizontal: isCompact ? spacing.sm + 4 : spacing.base,
+            paddingVertical: isCompact ? spacing.sm : spacing.sm + 2,
+            maxWidth: isCompact ? "86%" : "82%",
           },
           outbound ? styles.outboundBubble : styles.inboundBubble,
         ]}
@@ -69,9 +75,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   bubble: {
-    maxWidth: "82%",
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.sm + 2,
     borderRadius: radii.card,
   },
   inboundBubble: {

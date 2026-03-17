@@ -10,6 +10,8 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { useSettings } from "@/context/SettingsContext";
+
 import {
   opacity,
   radii,
@@ -74,6 +76,8 @@ function CardContent({
   disabled = false,
 }: CardContentProps) {
   const theme = useTheme();
+  const { settings } = useSettings();
+  const isCompact = settings.density === "compact";
   const glowToken = selected
     ? theme.glow.active
     : pressed
@@ -130,7 +134,17 @@ function CardContent({
             },
           ]}
         />
-        <View style={[styles.content, contentStyle]}>
+        <View
+          style={[
+            styles.content,
+            contentStyle,
+            {
+              gap: isCompact ? spacing.xs : spacing.sm,
+              paddingHorizontal: isCompact ? spacing.sm + 4 : spacing.base,
+              paddingVertical: isCompact ? spacing.sm + 4 : spacing.base,
+            },
+          ]}
+        >
           {hasHeader ? (
             <View style={styles.headerRow}>
               <View style={styles.headerCopy}>

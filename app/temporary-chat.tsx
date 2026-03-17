@@ -11,7 +11,10 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { Message } from "@/context/ChatsContext";
-import { useSettings } from "@/context/SettingsContext";
+import {
+  getExecutionCustomEndpoint,
+  useSettings,
+} from "@/context/SettingsContext";
 import { streamChat } from "@/lib/api";
 import {
   AppShell,
@@ -98,7 +101,10 @@ export default function TemporaryChatScreen() {
           messages: requestMessages,
           provider: settings.ai.provider,
           model: settings.ai.model,
-          customEndpoint: settings.ai.customEndpoint || undefined,
+          customEndpoint: getExecutionCustomEndpoint(
+            settings.ai.provider,
+            settings.ai.customEndpoint,
+          ),
         },
         (chunk) => {
           setMessages((currentMessages) =>
@@ -177,7 +183,9 @@ export default function TemporaryChatScreen() {
           contentContainerStyle={styles.messageListContent}
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() =>
-            scrollViewRef.current?.scrollToEnd({ animated: true })
+            scrollViewRef.current?.scrollToEnd({
+              animated: !settings.reducedMotion,
+            })
           }
           showsVerticalScrollIndicator={false}
           style={styles.messageList}

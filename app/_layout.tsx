@@ -30,8 +30,10 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ChatsProvider } from "@/context/ChatsContext";
+import { LibraryProvider } from "@/context/LibraryContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { ThemeProvider } from "@/src/theme/ThemeProvider";
+import { useSettings } from "@/context/SettingsContext";
 
 const SPLASH_SCREEN_FALLBACK_MS = 2000;
 
@@ -40,10 +42,13 @@ void SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
+  const { settings } = useSettings();
+
   return (
     <Stack
       screenOptions={{
         headerShown: false,
+        animation: settings.reducedMotion ? "none" : "default",
         ...(Platform.OS === "ios"
           ? { gestureEnabled: true, fullScreenGestureEnabled: true }
           : {}),
@@ -107,11 +112,13 @@ export default function RootLayout() {
           <QueryClientProvider client={queryClient}>
             <SettingsProvider>
               <ThemeProvider>
-                <ChatsProvider>
-                  <KeyboardProvider>
-                    <RootLayoutNav />
-                  </KeyboardProvider>
-                </ChatsProvider>
+                <LibraryProvider>
+                  <ChatsProvider>
+                    <KeyboardProvider>
+                      <RootLayoutNav />
+                    </KeyboardProvider>
+                  </ChatsProvider>
+                </LibraryProvider>
               </ThemeProvider>
             </SettingsProvider>
           </QueryClientProvider>
